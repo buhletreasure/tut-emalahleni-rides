@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { format } from "date-fns";
 
 const Header = () => {
   const location = useLocation();
@@ -50,7 +51,8 @@ const Header = () => {
           <h1 className="text-xl font-bold">{title}</h1>
         </div>
         <div className="text-sm font-medium">
-          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          <div>{format(currentTime, 'dd MMM yyyy')}</div>
+          <div className="text-right">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
         </div>
       </div>
     </header>

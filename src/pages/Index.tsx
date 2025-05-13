@@ -9,7 +9,7 @@ import QRCodeModal from "@/components/QRCodeModal";
 import MiniProfile from "@/components/MiniProfile";
 import { useToast } from "@/hooks/use-toast";
 import LoginForm from "@/components/LoginForm";
-import { format } from "date-fns";
+import { format, isSameDay, startOfToday } from "date-fns";
 
 // Mock data
 const routes = [
@@ -26,7 +26,7 @@ const studentData = {
   course: "Computer Science"
 };
 
-// Bus schedule times (mock data)
+// Bus schedule times - updated to match specific times
 const getScheduleTimes = (routeId: string) => {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
@@ -41,17 +41,17 @@ const getScheduleTimes = (routeId: string) => {
   } 
   // Weekday schedule (Monday to Friday)
   else if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-    if (routeId === "route1" || routeId === "route3") { // Residence to Campus
+    if (routeId === "route1" || routeId === "route3") { // Residence to Campus (quarter to the hour)
       return [
-        "07:15", "07:45", "08:45", "09:45", "10:45", "11:45", 
+        "07:45", "08:45", "09:45", "10:45", "11:45", 
         "12:45", "13:45", "14:45", "15:45", "16:45", "17:45", 
-        "19:45", "21:45"
+        "18:45", "19:45", "20:45", "21:45"
       ];
-    } else { // Campus to Residence
+    } else { // Campus to Residence (10 past the hour)
       return [
         "08:10", "09:10", "10:10", "11:10", "12:10", "13:10", 
-        "14:10", "15:10", "16:10", "17:10", "18:10", "20:10", 
-        "22:10"
+        "14:10", "15:10", "16:10", "17:10", "18:10", "19:10", 
+        "20:10", "21:10", "22:10"
       ];
     }
   }
@@ -131,6 +131,12 @@ const Index = () => {
 
   // Load bus schedules based on selected route and date
   useEffect(() => {
+    // Only show schedules for the current day
+    if (!isSameDay(selectedDate, new Date())) {
+      setBusSchedules([]);
+      return;
+    }
+    
     // In a real app, this would be an API call
     const times = getScheduleTimes(selectedRoute);
     const route = routes.find(r => r.id === selectedRoute);
@@ -156,6 +162,8 @@ const Index = () => {
     return <LoginForm onLogin={handleLogin} />;
   }
 
+  const today = new Date();
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <Header />
@@ -173,7 +181,7 @@ const Index = () => {
         
         <div className="mt-4">
           <h2 className="text-lg font-bold mb-3">
-            Available Buses - {format(selectedDate, 'EEEE, MMMM d')}
+            Available Buses - {format(today, 'EEEE, MMMM d')}
           </h2>
           
           {busSchedules.length > 0 ? (
