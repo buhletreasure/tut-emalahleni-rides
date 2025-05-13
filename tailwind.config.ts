@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,12 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// TUT Brand Colors
+				tut: {
+					blue: "#0052A5",
+					red: "#E31B23",
+					yellow: "#FAB700",
 				}
 			},
 			borderRadius: {
