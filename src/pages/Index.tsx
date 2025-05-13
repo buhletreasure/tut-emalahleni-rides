@@ -6,8 +6,10 @@ import DateSelector from "@/components/DateSelector";
 import RouteSelector from "@/components/RouteSelector";
 import BusScheduleCard from "@/components/BusScheduleCard";
 import QRCodeModal from "@/components/QRCodeModal";
+import MiniProfile from "@/components/MiniProfile";
 import { useToast } from "@/hooks/use-toast";
 import LoginForm from "@/components/LoginForm";
+import { format } from "date-fns";
 
 // Mock data
 const routes = [
@@ -17,27 +19,63 @@ const routes = [
   { id: "route4", from: "TUT Emalahleni Campus", to: "Corridor Hill Residence" },
 ];
 
+// Mock student data
+const studentData = {
+  studentNumber: "219012345",
+  fullName: "Boikanyo Mohlamonyane",
+  course: "Computer Science"
+};
+
 // Bus schedule times (mock data)
 const getScheduleTimes = (routeId: string) => {
-  // These are the times from the specifications
-  if (routeId === "route1" || routeId === "route3") { // Residence to Campus
-    return [
-      "07:15", "07:45", "08:45", "09:45", "10:45", "11:45", 
-      "12:45", "13:45", "14:45", "15:45", "16:45", "17:45", 
-      "19:45", "21:45"
-    ];
-  } else { // Campus to Residence
-    return [
-      "08:10", "09:10", "10:10", "11:10", "12:10", "13:10", 
-      "14:10", "15:10", "16:10", "17:10", "18:10", "20:10", 
-      "22:10"
-    ];
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
+  
+  // Weekend schedule (Saturday)
+  if (dayOfWeek === 6) {
+    if (routeId === "route1" || routeId === "route3") { // Residence to Campus
+      return ["08:00", "10:00", "12:00"];
+    } else { // Campus to Residence
+      return ["09:00", "11:00", "14:10"];
+    }
+  } 
+  // Weekday schedule (Monday to Friday)
+  else if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+    if (routeId === "route1" || routeId === "route3") { // Residence to Campus
+      return [
+        "07:15", "07:45", "08:45", "09:45", "10:45", "11:45", 
+        "12:45", "13:45", "14:45", "15:45", "16:45", "17:45", 
+        "19:45", "21:45"
+      ];
+    } else { // Campus to Residence
+      return [
+        "08:10", "09:10", "10:10", "11:10", "12:10", "13:10", 
+        "14:10", "15:10", "16:10", "17:10", "18:10", "20:10", 
+        "22:10"
+      ];
+    }
+  }
+  // Sunday (no service)
+  else {
+    return [];
   }
 };
 
 // Generate random number of available seats
 const getRandomSeats = (max: number) => {
   return Math.floor(Math.random() * (max + 1));
+};
+
+// Filter schedules for current time and later
+const filterCurrentSchedules = (schedules: any[]) => {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  
+  return schedules.filter(schedule => {
+    const [hour, minute] = schedule.time.split(':').map(Number);
+    return (hour > currentHour) || (hour === currentHour && minute >= currentMinute);
+  });
 };
 
 const Index = () => {
@@ -47,6 +85,7 @@ const Index = () => {
   const [busSchedules, setBusSchedules] = useState<any[]>([]);
   const [showQRModal, setShowQRModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   
   const { toast } = useToast();
 
@@ -78,6 +117,17 @@ const Index = () => {
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
+  
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   // Load bus schedules based on selected route and date
   useEffect(() => {
@@ -96,8 +146,11 @@ const Index = () => {
       totalSeats: 40
     }));
     
-    setBusSchedules(schedules);
-  }, [selectedRoute, selectedDate]);
+    // Only show schedules for the current time and later
+    const filteredSchedules = filterCurrentSchedules(schedules);
+    
+    setBusSchedules(filteredSchedules);
+  }, [selectedRoute, selectedDate, currentTime]);
 
   if (!isAuthenticated) {
     return <LoginForm onLogin={handleLogin} />;
@@ -108,12 +161,20 @@ const Index = () => {
       <Header />
       
       <main className="pt-24 px-4 max-w-lg mx-auto">
+        <MiniProfile 
+          studentNumber={studentData.studentNumber}
+          fullName={studentData.fullName}
+          course={studentData.course}
+        />
+        
         <RouteSelector routes={routes} onRouteSelect={handleRouteSelect} />
         
         <DateSelector onDateSelect={handleDateSelect} />
         
         <div className="mt-4">
-          <h2 className="text-lg font-bold mb-3">Available Buses</h2>
+          <h2 className="text-lg font-bold mb-3">
+            Available Buses - {format(selectedDate, 'EEEE, MMMM d')}
+          </h2>
           
           {busSchedules.length > 0 ? (
             <div className="space-y-3">

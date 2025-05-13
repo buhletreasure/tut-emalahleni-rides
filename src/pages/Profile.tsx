@@ -13,12 +13,21 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Mock user data
+  // Updated user data
   const userData = {
-    name: "John Doe",
+    name: "Boikanyo Mohlamonyane",
     studentId: "219012345",
     email: "219012345@tut.ac.za",
-    residence: "Khayalethu Residence"
+    residence: "Khayalethu Residence",
+    course: "Computer Science"
+  };
+  
+  // Get initials from full name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part.charAt(0))
+      .join('');
   };
   
   const handleLogout = () => {
@@ -42,7 +51,7 @@ const Profile = () => {
         <Card className="mb-6">
           <CardHeader className="flex flex-col items-center pb-2">
             <Avatar className="w-20 h-20 mb-2 bg-tut-blue">
-              <User size={40} className="text-white" />
+              <div className="text-white text-xl font-bold">{getInitials(userData.name)}</div>
             </Avatar>
             <CardTitle className="text-xl">{userData.name}</CardTitle>
           </CardHeader>
@@ -57,9 +66,13 @@ const Profile = () => {
                 <span className="text-gray-600">Email</span>
                 <span className="font-medium">{userData.email}</span>
               </div>
-              <div className="flex justify-between p-2">
+              <div className="flex justify-between p-2 border-b">
                 <span className="text-gray-600">Residence</span>
                 <span className="font-medium">{userData.residence}</span>
+              </div>
+              <div className="flex justify-between p-2">
+                <span className="text-gray-600">Course</span>
+                <span className="font-medium">{userData.course}</span>
               </div>
             </div>
           </CardContent>
