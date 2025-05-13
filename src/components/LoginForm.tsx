@@ -3,14 +3,23 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface LoginFormProps {
   onLogin: () => void;
 }
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
-  const [studentId, setStudentId] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student");
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
@@ -18,7 +27,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentId || !password) {
+    if (!userId || !password) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -37,11 +46,41 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
       // For demo, we'll accept any credentials
       toast({
         title: "Login successful",
-        description: "Welcome to TUT SmartRide"
+        description: `Welcome to TUT SmartRide (${role})`
       });
       
       onLogin();
     }, 1500);
+  };
+
+  const getPlaceholder = () => {
+    switch (role) {
+      case "student":
+        return "Enter your student ID";
+      case "driver":
+        return "Enter your driver ID";
+      case "admin":
+        return "Enter your admin ID";
+      case "campusAdmin":
+        return "Enter your campus admin ID";
+      default:
+        return "Enter your ID";
+    }
+  };
+
+  const getIdLabel = () => {
+    switch (role) {
+      case "student":
+        return "Student ID";
+      case "driver":
+        return "Driver ID";
+      case "admin":
+        return "Admin ID";
+      case "campusAdmin":
+        return "Campus Admin ID";
+      default:
+        return "User ID";
+    }
   };
   
   return (
@@ -60,23 +99,43 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1">
-            Student ID
-          </label>
+          <Label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+            Login as
+          </Label>
+          <Select
+            value={role}
+            onValueChange={setRole}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select your role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Student</SelectItem>
+              <SelectItem value="driver">Driver</SelectItem>
+              <SelectItem value="admin">System Admin</SelectItem>
+              <SelectItem value="campusAdmin">Campus Admin</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
+            {getIdLabel()}
+          </Label>
           <Input
-            id="studentId"
+            id="userId"
             type="text"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
-            placeholder="Enter your student ID"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            placeholder={getPlaceholder()}
             className="w-full"
           />
         </div>
         
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <Label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
             Password
-          </label>
+          </Label>
           <Input
             id="password"
             type="password"
